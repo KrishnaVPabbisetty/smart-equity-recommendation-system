@@ -13,3 +13,4 @@ backend/config.py
 # General
 *.log
 .DS_Store
+__pycache__/
