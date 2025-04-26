@@ -9,6 +9,8 @@ from fastapi.security import OAuth2PasswordBearer
 from config import SECRET_KEY, ALGORITHM
 from jose import jwt, JWTError
 from datetime import datetime
+from utils.file_parser import extract_text_from_pdf, chunk_text
+from vectorstore.pinecone_handler import upsert_chunks
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -29,10 +31,8 @@ def get_current_admin(db: Session = Depends(get_db), token: str = Depends(oauth2
         raise HTTPException(status_code=401, detail="Invalid token")
 
 @router.post("/admin/dashboard")
-def upload_document(
-    current_admin: User = Depends(get_current_admin)
-):
-    return  {"message": f"Welcome to your admin dashboard, {current_admin.username}!"}
+def admin_dashboard(current_admin: User = Depends(get_current_admin)):
+    return {"message": f"Welcome to your admin dashboard, {current_admin.username}!"}
 
 
 @router.post("/admin/upload")
@@ -54,4 +54,17 @@ def upload_document(
     db.commit()
     db.refresh(document)
 
-    return {"message": f"'{file.filename}' uploaded successfully and recorded."}
+    text = extract_text_from_pdf(filepath)
+    chunks = chunk_text(text)
+
+    metadata = {
+        "document_id": document.id,
+        "filename": file.filename,
+        "uploaded_by": current_admin.username
+    }
+    chunks_uploaded = upsert_chunks(chunks, metadata)
+
+    return {
+        "message": f"'{file.filename}' uploaded, parsed, and {chunks_uploaded} chunks stored in Pinecone.",
+        "chunks_uploaded": chunks_uploaded
+    }

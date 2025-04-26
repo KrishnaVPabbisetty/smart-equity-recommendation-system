@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from routes import auth_routes, user_routes, admin_routes
 from init_db import init
 
+
 app = FastAPI()
 init() #initiates db
 
