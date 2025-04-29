@@ -17,6 +17,11 @@ const Navbar = () => {
         <button onClick={() => navigate("/dashboard")} className="text-black">Dashboard</button>
         <button onClick={() => navigate("/profile")} className="text-black">Profile</button>
         <button onClick={handleLogout} className="text-black">Logout</button>
+        {localStorage.getItem("is_admin") === "true" && (
+        <button onClick={() => navigate("/admin")} className="text-black">
+          Admin
+        </button>
+)}
       </nav>
     </header>
   );
