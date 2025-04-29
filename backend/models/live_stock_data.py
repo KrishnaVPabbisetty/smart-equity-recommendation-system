@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, DateTime
+from sqlalchemy import Integer, Column, String, Float, DateTime
 from .base import Base
 from datetime import datetime
 
@@ -6,7 +6,7 @@ from datetime import datetime
 class LiveStockData(Base):
     __tablename__ = "live_stock_data"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     symbol = Column(String, index=True)
     price = Column(Float)
     open_price = Column(Float)
