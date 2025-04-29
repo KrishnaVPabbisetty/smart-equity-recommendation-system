@@ -9,6 +9,7 @@ backend/env/
 backend/.env
 backend/test.db
 backend/config.py
+backend/uploaded_docs/*
 
 # General
 *.log
