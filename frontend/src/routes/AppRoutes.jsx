@@ -11,6 +11,7 @@ import {
   import AuthLayout from "../layouts/AuthLayout";
   import MainLayout from "../layouts/MainLayout";
   import Profile from "../pages/Profile";
+  import AdminPanel from "../pages/AdminPanel";
   
   // 🔐 Simple mock check for token-based authentication
   const isAuthenticated = () => {
@@ -50,7 +51,15 @@ import {
                 </PrivateRoute>
                 }
             />
-          </Route>
+            <Route
+                path="/admin"
+                element={
+                <PrivateRoute>
+                    <AdminPanel />
+                </PrivateRoute>
+                }
+            />
+            </Route>
   
           {/* Catch All */}
           <Route path="*" element={<Navigate to="/dashboard" />} />
