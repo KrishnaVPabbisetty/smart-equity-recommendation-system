@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from config import SECRET_KEY, ALGORITHM
 from db import get_db
 from auth import get_user
-from models import User
+from models.user import User
 from jose import jwt, JWTError
 from pydantic import BaseModel
 from vectorstore.pinecone_handler import embedder, index
@@ -14,10 +14,14 @@ from langchain_openai import ChatOpenAI
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 class ChatRequest(BaseModel):
     question: str
 
-def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> User:
+
+def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+) -> User:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
@@ -30,12 +34,17 @@ def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+
 @router.post("/chat")
 def chat(request: ChatRequest, current_user: User = Depends(get_current_user)):
     query_embedding = embedder.embed_query(request.question)
     search_results = index.query(vector=query_embedding, top_k=5, include_metadata=True)
 
-    context_chunks = [match["metadata"]["chunk_text"] for match in search_results["matches"] if "chunk_text" in match["metadata"]]
+    context_chunks = [
+        match["metadata"]["chunk_text"]
+        for match in search_results["matches"]
+        if "chunk_text" in match["metadata"]
+    ]
     context = "\n".join(context_chunks)
 
     prompt = f"""

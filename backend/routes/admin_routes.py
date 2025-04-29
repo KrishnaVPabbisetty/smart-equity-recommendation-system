@@ -3,7 +3,8 @@ from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import os
 from db import get_db
-from models import User, Document
+from models.user import User
+from models.document import Document
 from auth import get_user
 from fastapi.security import OAuth2PasswordBearer
 from config import SECRET_KEY, ALGORITHM
