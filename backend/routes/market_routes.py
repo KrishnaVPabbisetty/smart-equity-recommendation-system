@@ -11,7 +11,7 @@ import websockets
 
 router = APIRouter()
 
-ALPACA_WS_URL = "wss://stream.data.alpaca.markets/v2/sip"
+ALPACA_WS_URL = "wss://stream.data.alpaca.markets/v2/iex"
 
 
 async def get_current_user_from_ws(websocket: WebSocket, db: Session) -> User:
@@ -25,6 +25,7 @@ async def get_current_user_from_ws(websocket: WebSocket, db: Session) -> User:
         raise WebSocketDisconnect(code=4001)
 
     user = get_user(db, username)
+    print(user)
     if not user:
         raise WebSocketDisconnect(code=4001)
     return user
@@ -63,6 +64,7 @@ async def market_data_ws(websocket: WebSocket, db: Session = Depends(get_db)):
         # Connect to Alpaca WebSocket
         async with websockets.connect(ALPACA_WS_URL) as alpaca_ws:
             # Authenticate
+            print(current_user.username)
             auth_msg = {
                 "action": "auth",
                 "key": current_user.alpaca_api_key,
