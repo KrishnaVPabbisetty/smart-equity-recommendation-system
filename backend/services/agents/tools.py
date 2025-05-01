@@ -1,13 +1,24 @@
 # services/agents/tools.py
 
 from langchain_core.tools import tool
-
+from utils.pinecone_retreival import retrieve_context
 # LangChain-compatible tool functions using decorators
 
 @tool
 def retrieve_similar_docs(query: str) -> str:
     """Search financial documents relevant to the given query."""
-    return "[Simulated] Retrieved documents for: " + query
+    try:
+        context = retrieve_context(query)
+
+        if not context:
+            return f"No relevant information found in the uploaded documents for the query: '{query}'."
+
+        return f"Retrieved documents for the query '{query}':\n{context}"
+
+    except Exception as e:
+        # Log the error (replace with actual logging if available)
+        print(f"Error in retrieve_similar_docs: {e}")
+        return f"An error occurred while retrieving documents for the query: '{query}'."
 
 @tool
 def get_user_indicators(user_id: str) -> str:
