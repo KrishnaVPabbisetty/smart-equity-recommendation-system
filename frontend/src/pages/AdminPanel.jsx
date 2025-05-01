@@ -1,27 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 
 export default function AdminPanel() {
-  const [documents, setDocuments] = useState([
-    { id: 1, name: 'Apple_Q2_Results.pdf', date: '2025-04-20' },
-    { id: 2, name: 'Tesla_Earnings_2025.pdf', date: '2025-04-22' },
-    { id: 3, name: 'Meta_Annual_Report.pdf', date: '2025-04-25' },
-  ]);
+  const [documents, setDocuments] = useState([]);
+  const [file, setFile] = useState(null);
 
-  const handleUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const newDoc = {
-        id: documents.length + 1,
-        name: file.name,
-        date: new Date().toISOString().split('T')[0]
-      };
-      setDocuments([...documents, newDoc]);
+  const fetchDocuments = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/admin/documents", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      setDocuments(data);
+    } catch (err) {
+      console.error("Error fetching documents", err);
     }
   };
 
-  const handleRemove = (id) => {
-    setDocuments(documents.filter(doc => doc.id !== id));
+  const handleUpload = async (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+
+    if (!selectedFile) return;
+
+    const token = localStorage.getItem("token");
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/admin/upload", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (res.ok) {
+        alert("Document uploaded successfully!");
+        fetchDocuments(); // 🔥 Refresh documents after upload
+      } else {
+        const data = await res.json();
+        alert("Upload failed: " + (data.detail || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Upload error", err);
+    }
   };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -41,24 +74,23 @@ export default function AdminPanel() {
             <tr className="bg-gray-100">
               <th className="p-2 text-left">Document Name</th>
               <th className="p-2 text-left">Upload Date</th>
-              <th className="p-2">Action</th>
             </tr>
           </thead>
           <tbody>
-            {documents.map(doc => (
-              <tr key={doc.id} className="border-b">
-                <td className="p-2">{doc.name}</td>
-                <td className="p-2">{doc.date}</td>
-                <td className="p-2 text-center">
-                  <button
-                    onClick={() => handleRemove(doc.id)}
-                    className="bg-red-500 text-black px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    Remove
-                  </button>
+            {documents.length > 0 ? (
+              documents.map((doc) => (
+                <tr key={doc.id} className="border-b">
+                  <td className="p-2">{doc.name}</td>
+                  <td className="p-2">{doc.upload_date}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="2" className="p-2 text-center">
+                  No documents uploaded yet.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

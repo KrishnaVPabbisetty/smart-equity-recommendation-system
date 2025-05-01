@@ -69,7 +69,7 @@ const Profile = () => {
         <div className="md:col-span-3">
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded w-full md:w-1/3"
+            className="bg-blue-400 hover:bg-blue-700 text-white px-6 py-3 rounded w-full md:w-1/3"
           >
             Save Profile
           </button>

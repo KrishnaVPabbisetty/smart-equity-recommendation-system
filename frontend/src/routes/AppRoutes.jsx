@@ -12,6 +12,8 @@ import {
   import MainLayout from "../layouts/MainLayout";
   import Profile from "../pages/Profile";
   import AdminPanel from "../pages/AdminPanel";
+  import AIAssistant from "../components/AIAssistant";
+
   
   // 🔐 Simple mock check for token-based authentication
   const isAuthenticated = () => {
@@ -59,6 +61,7 @@ import {
                 </PrivateRoute>
                 }
             />
+            <Route path="/ai-assistant" element={<AIAssistant />} />
             </Route>
   
           {/* Catch All */}
