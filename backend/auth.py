@@ -10,6 +10,7 @@ from config import (
 )
 from sqlalchemy.orm import Session
 from models.user import User
+from fastapi import WebSocket
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -47,3 +48,11 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     print("No error")
     return user
+
+
+def get_token_from_ws(websocket: WebSocket) -> str:
+    """Extract Bearer token from WebSocket headers."""
+    auth_header = websocket.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise WebSocketDisconnect(code=4001)
+    return auth_header.split()[1]

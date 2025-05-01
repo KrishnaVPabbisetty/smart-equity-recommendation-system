@@ -1,7 +1,14 @@
 # main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth_routes, user_routes, admin_routes, trading_routes, healthcheck
+from routes import (
+    auth_routes,
+    user_routes,
+    admin_routes,
+    trading_routes,
+    healthcheck,
+    market_routes,
+)
 from init_db import init
 
 
@@ -22,3 +29,4 @@ app.include_router(user_routes.router)
 app.include_router(admin_routes.router)
 app.include_router(trading_routes.router)
 app.include_router(healthcheck.router)
+app.include_router(market_routes.router)
