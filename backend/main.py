@@ -1,6 +1,15 @@
 # main.py
 from fastapi import FastAPI
-from routes import auth_routes, user_routes, admin_routes, trading_routes, healthcheck, agent_chat
+from routes import (
+    auth_routes,
+    user_routes,
+    admin_routes,
+    trading_routes,
+    healthcheck,
+    agent_chat,
+    market_routes,
+)
+
 from init_db import init
 
 
@@ -13,3 +22,5 @@ app.include_router(admin_routes.router)
 app.include_router(trading_routes.router)
 app.include_router(healthcheck.router)
 app.include_router(agent_chat.router)
+app.include_router(market_routes.router)
+
