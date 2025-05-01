@@ -27,10 +27,10 @@ export default function OrderReviewModal({
           {marketPrice.toFixed(2)}
         </p>
         <p>
-          Estimated Total: <strong>${(qty * marketPrice).toFixed(6)}</strong>
+          Estimated Total: <strong>${(qty * marketPrice).toFixed(2)}</strong>
         </p>
         <p className="text-gray-500 mt-1">
-          Buying Power: ${parseFloat(buyingPower).toFixed(2)}
+          Buying Power: ${parseFloat(buyingPower).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>
 
         <div className="border-t my-4 pt-2 text-sm text-gray-600">

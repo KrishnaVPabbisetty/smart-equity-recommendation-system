@@ -10,10 +10,12 @@ export default function BuySellPanel() {
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
   const [timeInForce, setTimeInForce] = useState("day");
-  const [marketPrice, setMarketPrice] = useState(210.6); // Placeholder
   const [buyingPower, setBuyingPower] = useState("0.00");
   const [showModal, setShowModal] = useState(false);
+  const [marketPrice, setMarketPrice] = useState(0);
+  const [marketClosed, setMarketClosed] = useState(false);
 
+  // Fetch buying power
   useEffect(() => {
     const fetchBuyingPower = async () => {
       const token = localStorage.getItem("token");
@@ -29,10 +31,58 @@ export default function BuySellPanel() {
         console.error("Error fetching buying power:", err);
       }
     };
-
     fetchBuyingPower();
   }, []);
 
+  // WebSocket for live market price
+  useEffect(() => {
+    if (!symbol) return;
+  
+    const token = localStorage.getItem("token");
+    const ws = new WebSocket("ws://127.0.0.1:8000/ws/market");
+    let timeout;
+  
+    ws.onopen = () => {
+      // Send token and symbol after opening
+      ws.send(JSON.stringify({
+        token: token,
+        symbol: symbol.toUpperCase()
+      }));
+    };
+  
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+  
+        if (data.symbol === symbol.toUpperCase() && data.price) {
+          setMarketPrice(parseFloat(data.price));
+          setMarketClosed(false);
+  
+          // Reset timeout on every message
+          clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            setMarketClosed(true);
+          }, 30000); // 30 seconds of inactivity = market closed
+        }
+      } catch (err) {
+        console.error("Failed to parse WebSocket message:", err);
+      }
+    };
+  
+    ws.onerror = (err) => {
+      console.error("WebSocket error:", err);
+    };
+  
+    ws.onclose = () => {
+      clearTimeout(timeout);
+    };
+  
+    return () => {
+      ws.close();
+      clearTimeout(timeout);
+    };
+  }, [symbol]);
+  
   const estimatedCost =
     buyMode === "dollars"
       ? parseFloat(qty)
@@ -115,7 +165,16 @@ export default function BuySellPanel() {
 
         <div>
           <label className="block font-medium">Market Price</label>
-          <div className="font-semibold">${marketPrice.toFixed(2)}</div>
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">
+              ${marketPrice.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </span>
+            {marketClosed && (
+              <span className="text-sm text-gray-500 italic">Market closed</span>
+            )}
+          </div>
         </div>
 
         <div>
@@ -230,8 +289,8 @@ export default function BuySellPanel() {
 
         <div className="text-sm font-medium">
           <div>Estimated Quantity: {estimatedQty}</div>
-          <div>Estimated Cost: ${estimatedCost}</div>
-          <div>Buying Power: ${buyingPower}</div>
+          <div>Estimated Cost: ${parseFloat(estimatedCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</div>
+          <div>Buying Power: ${parseFloat(buyingPower).toLocaleString()}</div>
         </div>
 
         <button
@@ -247,7 +306,6 @@ export default function BuySellPanel() {
         </button>
       </div>
 
-      {/* Modal Component */}
       <OrderReviewModal
         show={showModal}
         onClose={() => setShowModal(false)}
