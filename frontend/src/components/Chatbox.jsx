@@ -37,7 +37,7 @@ const ChatBox = () => {
   };
 
   return (
-    <div className="bg-white shadow rounded-xl p-4 flex flex-col justify-between h-full min-h-[400px]">
+    <div className="bg-white shadow rounded-xl p-4 flex flex-col justify-between h-full min-h-[600px]">
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-semibold text-gray-800">AI Investment Assistant</h3>
         {/* <button onClick={handleClear} className="text-sm text-gray-500 hover:text-red-500 flex items-center gap-1">
