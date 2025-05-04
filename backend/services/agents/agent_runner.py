@@ -43,6 +43,8 @@ async def run_agent(user_query: str, user_id: Optional[str] = None) -> str:
 
         try:
             parsed_args = eval(args) if isinstance(args, str) else args
+            #if user_id:
+            parsed_args["user_id"] = str(user_id)
             result = tool_fn.run(parsed_args)
         except Exception as e:
             result = f"Tool '{tool_name}' failed: {str(e)}"
