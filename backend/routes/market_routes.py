@@ -97,3 +97,73 @@ async def market_data_ws(websocket: WebSocket, db: Session = Depends(get_db)):
     except Exception as e:
         await websocket.send_text(f"WebSocket error: {str(e)}")
         await websocket.close()
+
+# @router.websocket("/ws/market")
+# async def market_data_ws(websocket: WebSocket, db: Session = Depends(get_db)):
+#     await websocket.accept()
+
+#     try:
+#         current_user = await get_current_user_from_ws(websocket, db)
+#         headers = {
+#             "APCA-API-KEY-ID": current_user.alpaca_api_key,
+#             "APCA-API-SECRET-KEY": current_user.alpaca_secret_key,
+#         }
+
+#         # 🔹 Get watchlist symbols
+#         watchlist_symbols = []
+#         try:
+#             watchlist_resp = requests.get(
+#                 "https://paper-api.alpaca.markets/v2/watchlists:by_name",
+#                 headers=headers,
+#                 params={"name": "default"}
+#             )
+#             if watchlist_resp.status_code == 200:
+#                 watchlist_data = watchlist_resp.json()
+#                 watchlist_symbols = [asset["symbol"] for asset in watchlist_data.get("assets", [])]
+#         except Exception as e:
+#             print("Watchlist fetch error:", e)
+
+#         # 🔹 Get position symbols
+#         position_symbols = []
+#         try:
+#             positions_resp = requests.get(
+#                 "https://paper-api.alpaca.markets/v2/positions",
+#                 headers=headers
+#             )
+#             if positions_resp.status_code == 200:
+#                 position_data = positions_resp.json()
+#                 position_symbols = [pos["symbol"] for pos in position_data]
+#         except Exception as e:
+#             print("Positions fetch error:", e)
+
+#         # 🔹 Combine unique symbols
+#         symbols = list(set(watchlist_symbols + position_symbols))
+#         if not symbols:
+#             await websocket.send_text("No symbols to subscribe to")
+#             await websocket.close()
+#             return
+
+#         # 🔹 Connect to Alpaca WebSocket (IEX feed)
+#         async with websockets.connect("wss://stream.data.alpaca.markets/v2/iex") as alpaca_ws:
+#             await alpaca_ws.send(json.dumps({
+#                 "action": "auth",
+#                 "key": current_user.alpaca_api_key,
+#                 "secret": current_user.alpaca_secret_key,
+#             }))
+#             await websocket.send_text(await alpaca_ws.recv())
+
+#             await alpaca_ws.send(json.dumps({
+#                 "action": "subscribe",
+#                 "trades": symbols
+#             }))
+#             await websocket.send_text(await alpaca_ws.recv())
+
+#             while True:
+#                 data = await alpaca_ws.recv()
+#                 await websocket.send_text(data)
+
+#     except WebSocketDisconnect:
+#         print("WebSocket client disconnected")
+#     except Exception as e:
+#         await websocket.send_text(f"WebSocket error: {str(e)}")
+#         await websocket.close()
