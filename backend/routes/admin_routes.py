@@ -12,6 +12,8 @@ from jose import jwt, JWTError
 from datetime import datetime
 from utils.file_parser import extract_text_from_pdf, chunk_text
 from vectorstore.pinecone_handler import upsert_chunks
+from schemas.document import DocumentOut
+from typing import List
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -69,3 +71,11 @@ def upload_document(
         "message": f"'{file.filename}' uploaded, parsed, and {chunks_uploaded} chunks stored in Pinecone.",
         "chunks_uploaded": chunks_uploaded
     }
+
+@router.get("/admin/documents", response_model=List[DocumentOut])
+def list_documents(
+    db: Session = Depends(get_db),
+    current_admin: User = Depends(get_current_admin)
+):
+    documents = db.query(Document).order_by(Document.created_at.desc()).all()
+    return documents
