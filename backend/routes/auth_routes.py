@@ -67,8 +67,10 @@ def login(
     user = authenticate_user(db, form_data.username, form_data.password)
     print(form_data.username)
     print(form_data.password)
+    print(user.is_admin)
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
     access_token = create_access_token(data={"sub": user.username})
     refresh_token = create_refresh_token(data={"sub": user.username})
-    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+    is_admin=user.is_admin
+    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer", is_admin=is_admin)
