@@ -218,8 +218,7 @@ def get_watchlist(
     response.raise_for_status()
     return response.json()
 
-from pydantic import BaseModel
-from typing import List
+
 
 class WatchlistUpdate(BaseModel):
     symbols: List[str]
@@ -253,27 +252,27 @@ def create_or_update_watchlist(
     response.raise_for_status()
     return response.json()
 
-@router.delete("/user/watchlist/{symbol}")
-def remove_from_watchlist(
-    symbol: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    # Get the watchlist ID
-    url = f"{ALPACA_BASE_URL}/v2/watchlists:by_name"
-    headers = get_alpaca_headers(current_user)
-    params = {"name": "default"}
+# @router.delete("/user/watchlist/{symbol}")
+# def remove_from_watchlist(
+#     symbol: str,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user),
+# ):
+#     # Get the watchlist ID
+#     url = f"{ALPACA_BASE_URL}/v2/watchlists:by_name"
+#     headers = get_alpaca_headers(current_user)
+#     params = {"name": "default"}
 
-    res = requests.get(url, headers=headers, params=params)
-    if res.status_code != 200:
-        raise HTTPException(status_code=404, detail="Watchlist not found")
-    watchlist_id = res.json()["id"]
+#     res = requests.get(url, headers=headers, params=params)
+#     if res.status_code != 200:
+#         raise HTTPException(status_code=404, detail="Watchlist not found")
+#     watchlist_id = res.json()["id"]
 
-    # Delete the symbol
-    del_url = f"{ALPACA_BASE_URL}/v2/watchlists/{watchlist_id}/{symbol}"
-    del_response = requests.delete(del_url, headers=headers)
-    del_response.raise_for_status()
-    return {"message": f"{symbol} removed from watchlist"}
+#     # Delete the symbol
+#     del_url = f"{ALPACA_BASE_URL}/v2/watchlists/{watchlist_id}/{symbol}"
+#     del_response = requests.delete(del_url, headers=headers)
+#     del_response.raise_for_status()
+#     return {"message": f"{symbol} removed from watchlist"}
 
 @router.get("/user/prices")
 def get_latest_prices(
