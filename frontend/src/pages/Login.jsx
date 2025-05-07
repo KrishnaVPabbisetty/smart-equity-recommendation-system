@@ -26,6 +26,7 @@ const Login = () => {
   
       if (res.ok) {
         localStorage.setItem("token", data.access_token);
+        localStorage.setItem("is_admin",data.is_admin)
         navigate("/dashboard");
       } else {
         alert("Login failed: " + (data.detail || "Unknown error"));

@@ -80,8 +80,8 @@ export default function AdminPanel() {
             {documents.length > 0 ? (
               documents.map((doc) => (
                 <tr key={doc.id} className="border-b">
-                  <td className="p-2">{doc.name}</td>
-                  <td className="p-2">{doc.upload_date}</td>
+                  <td className="p-2">{doc.filename}</td>
+                  <td className="p-2">{new Date(doc.created_at).toLocaleString()}</td>
                 </tr>
               ))
             ) : (
