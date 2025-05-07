@@ -16,7 +16,7 @@ async def chat_with_agent(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        response = await run_agent(payload.message, current_user.id)
+        response = await run_agent(payload.history, payload.question, current_user.id)
         return AgentChatResponse(status="success", response=response)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

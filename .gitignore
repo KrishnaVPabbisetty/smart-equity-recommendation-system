@@ -5,6 +5,7 @@ frontend/.env
 
 # Python (backend)
 backend/__pycache__/
+backend/venv
 backend/env/
 backend/.env
 backend/test.db
@@ -15,3 +16,4 @@ backend/uploaded_docs/*
 *.log
 .DS_Store
 __pycache__/
+/venv
