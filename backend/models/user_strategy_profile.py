@@ -8,8 +8,8 @@ class UserStrategyProfile(Base):
     __tablename__ = "user_strategy_profiles"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(String, ForeignKey("users.id"))
-    investment_strategy_id = Column(String, ForeignKey("investment_strategies.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    investment_strategy_id = Column(Integer, ForeignKey("investment_strategies.id"))
     customized_parameters = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
