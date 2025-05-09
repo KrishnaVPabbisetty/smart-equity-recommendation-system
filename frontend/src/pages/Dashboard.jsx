@@ -98,73 +98,76 @@ function Dashboard() {
         <MarketNewsPanel />
       </section>
 
-      {/* Portfolio Table + Buy/Sell */}
-      <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-        <div className="md:col-span-2 bg-white shadow-md rounded-lg overflow-hidden">
-          <div className="max-h-[600px] overflow-y-auto">
-            <table className="min-w-full table-auto">
-              <thead className="bg-gray-100 sticky top-0 z-10">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Symbol</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Share Price</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Shares</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Market Value</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unrealized P/L</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {portfolio.length > 0 ? (
-                  portfolio.map((stock) => {
-                    const unrealizedPL = parseFloat(stock.unrealized_pl);
-                    const isGain = unrealizedPL >= 0;
-
-                    return (
-                      <tr key={stock.symbol}>
-                        <td className="px-6 py-4">{stock.symbol}</td>
-                        <td className="px-6 py-4">{stock.current_price}</td>
-                        <td className="px-6 py-4">{stock.qty}</td>
-                        <td className="px-6 py-4">${parseFloat(stock.market_value).toFixed(2)}</td>
-                        <td className={`px-6 py-4 flex items-center gap-1 ${isGain ? "text-green-600" : "text-red-500"}`}>
-                          {isGain ? "▲" : "▼"} {unrealizedPL.toFixed(2)}
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-4 text-center">No portfolio data available</td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="bg-white shadow-md rounded-lg p-6 self-start">
-          <BuySellPanel />
-        </div>
-      </section>
-      <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+  {/* Portfolio Table Section */}
   <div className="md:col-span-2 space-y-6">
+    {/* Positions Table */}
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      
+      <div className="p-4 border-b">
+        <h3 className="text-lg font-semibold text-gray-800">Positions</h3>
+      </div>
+      <div className="max-h-[600px] overflow-y-auto">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-100 sticky top-0 z-10">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Symbol</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Share Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Shares</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Market Value</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unrealized P/L</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {portfolio.length > 0 ? (
+              portfolio.map((stock) => {
+                const unrealizedPL = parseFloat(stock.unrealized_pl);
+                const isGain = unrealizedPL >= 0;
+
+                return (
+                  <tr key={stock.symbol}>
+                    <td className="px-6 py-4">{stock.symbol}</td>
+                    <td className="px-6 py-4">{stock.current_price}</td>
+                    <td className="px-6 py-4">{stock.qty}</td>
+                    <td className="px-6 py-4">${parseFloat(stock.market_value).toFixed(2)}</td>
+                    <td className={`px-6 py-4 flex items-center gap-1 ${isGain ? "text-green-600" : "text-red-500"}`}>
+                      {isGain ? "▲" : "▼"} {unrealizedPL.toFixed(2)}
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan="4" className="px-6 py-4 text-center">No portfolio data available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <Orders />
+    {/* Orders Table */}
+    <div className="bg-white shadow-md rounded-lg p-6 self-start mt-6">
+      <Orders />
+    </div>
   </div>
 
   {/* Right side */}
   <div className="space-y-6">
-    {/* <div className="bg-white shadow-md rounded-lg p-6 self-start">
+    {/* Buy/Sell Panel */}
+    <div className="bg-white shadow-md rounded-lg p-6 self-start">
       <BuySellPanel />
-    </div> */}
-    <Watchlist />
+    </div>
+
+    {/* Watchlist below the Buy/Sell Panel */}
+    <div className="bg-white shadow-md rounded-lg p-6 self-start">
+      <Watchlist />
+    </div>
   </div>
 </section>
+<footer className="mt-8 text-center text-sm text-gray-500">
+  © 2024 Smart Equity Recommendation System. All rights reserved.
+</footer>
 
-      <footer className="mt-8 text-center text-sm text-gray-500">
-        © 2024 Smart Equity Recommendation System. All rights reserved.
-      </footer>
     </div>
   );
 }
