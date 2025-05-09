@@ -203,25 +203,30 @@ def get_today_news(
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/user/watchlist")
 def get_watchlist(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    # Get the user's default watchlist by name
     url = f"{ALPACA_BASE_URL}/v2/watchlists:by_name"
     headers = get_alpaca_headers(current_user)
     params = {"name": "default"}
 
     response = requests.get(url, headers=headers, params=params)
+
     if response.status_code == 404:
-        return {"assets": []}  # No watchlist exists yet
+        # If no watchlist exists, return an empty list
+        return {"assets": []}
+
     response.raise_for_status()
     return response.json()
 
 
-
 class WatchlistUpdate(BaseModel):
     symbols: List[str]
+
 
 @router.post("/user/watchlist")
 def create_or_update_watchlist(
@@ -232,25 +237,28 @@ def create_or_update_watchlist(
     url = f"{ALPACA_BASE_URL}/v2/watchlists:by_name"
     headers = get_alpaca_headers(current_user)
     params = {"name": "default"}
-    
-    # Attempt to update if watchlist exists
+
+    # Check if the default watchlist exists
     check = requests.get(url, headers=headers, params=params)
     if check.status_code == 200:
+        # If watchlist exists, update it with new symbols
         watchlist_id = check.json()["id"]
         response = requests.put(
             f"{ALPACA_BASE_URL}/v2/watchlists/{watchlist_id}",
             headers=headers,
-            json={"name": "default", "symbols": body.symbols}
+            json={"name": "default", "symbols": body.symbols},
         )
     else:
+        # If no watchlist exists, create a new one
         response = requests.post(
             f"{ALPACA_BASE_URL}/v2/watchlists",
             headers=headers,
-            json={"name": "default", "symbols": body.symbols}
+            json={"name": "default", "symbols": body.symbols},
         )
 
     response.raise_for_status()
     return response.json()
+
 
 # @router.delete("/user/watchlist/{symbol}")
 # def remove_from_watchlist(
