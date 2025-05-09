@@ -1,5 +1,5 @@
 import React from 'react'
-
+import chart from "/Users/harshaponukumati/Projects/smart-equity-recommendation-system/frontend/src/assets/chart-placeholder.png"
 function PerformanceChart() {
   return (
     <div className="bg-white shadow rounded-xl p-4">
@@ -11,7 +11,7 @@ function PerformanceChart() {
         ))}
       </div>
     </div>
-    <img src="/chart-placeholder.png" alt="Chart" className="rounded-lg w-full" />
+    <img src={chart} alt="Chart" className="rounded-lg w-full" />
   </div>
   )
 }

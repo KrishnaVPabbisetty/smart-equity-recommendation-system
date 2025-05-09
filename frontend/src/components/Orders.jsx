@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState("all");
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   const fetchOrders = async (status) => {
     const token = localStorage.getItem("token");
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/user/orders?status=${status}&limit=100`,
+        `${baseURL}/user/orders?status=${status}&limit=100`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

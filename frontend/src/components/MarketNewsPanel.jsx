@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 
 export default function MarketNewsPanel() {
   const [newsItems, setNewsItems] = useState([]);
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchNews = async () => {
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/user/news", {
+        const res = await fetch(`${baseURL}/user/news`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

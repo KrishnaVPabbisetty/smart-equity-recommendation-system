@@ -13,13 +13,14 @@ function Dashboard() {
   const [buyingPower, setBuyingPower] = useState(0);
   const [cash, setCash] = useState(0);
   const [equity, setEquity] = useState(0);
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const fetchPortfolio = async () => {
       const token = localStorage.getItem("token");
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/user/portfolio", {
+        const res = await fetch(`${baseURL}/user/portfolio`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -105,6 +106,7 @@ function Dashboard() {
               <thead className="bg-gray-100 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Symbol</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Share Price</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Shares</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Market Value</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Unrealized P/L</th>
@@ -119,6 +121,7 @@ function Dashboard() {
                     return (
                       <tr key={stock.symbol}>
                         <td className="px-6 py-4">{stock.symbol}</td>
+                        <td className="px-6 py-4">{stock.current_price}</td>
                         <td className="px-6 py-4">{stock.qty}</td>
                         <td className="px-6 py-4">${parseFloat(stock.market_value).toFixed(2)}</td>
                         <td className={`px-6 py-4 flex items-center gap-1 ${isGain ? "text-green-600" : "text-red-500"}`}>
