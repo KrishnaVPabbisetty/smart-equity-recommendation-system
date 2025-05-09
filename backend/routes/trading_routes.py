@@ -1,10 +1,11 @@
 # routes/trading_routes.py
-from fastapi import APIRouter, Depends, HTTPException, status,Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from schemas.trade import OrderType, Side
 from db import get_db
 from routes.user_routes import get_current_user
 from models.user import User
+from models.portfolio_history import PortfolioHistory
 import requests
 from typing import List, Optional
 from pydantic import BaseModel
@@ -16,6 +17,7 @@ router = APIRouter()
 ALPACA_BASE_URL = "https://paper-api.alpaca.markets"  # Paper trading environment
 
 ALPACA_NEWS_URL = "https://data.alpaca.markets/v1beta1/news"
+
 
 # Helper function to get Alpaca headers
 def get_alpaca_headers(user: User):
@@ -176,11 +178,12 @@ def sell_stock(
 
     return response.json()
 
+
 @router.get("/user/news")
 def get_today_news(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    limit: Optional[int] = 50
+    limit: Optional[int] = 50,
 ):
     def isoformat_z(dt):
         return dt.replace(microsecond=0).isoformat() + "Z"
@@ -282,6 +285,7 @@ def create_or_update_watchlist(
 #     del_response.raise_for_status()
 #     return {"message": f"{symbol} removed from watchlist"}
 
+
 @router.get("/user/prices")
 def get_latest_prices(
     symbols: str = Query(...),  # <-- Explicitly treat as query param
@@ -289,7 +293,7 @@ def get_latest_prices(
     current_user: User = Depends(get_current_user),
 ):
     symbol_list = [s.strip().upper() for s in symbols.split(",") if s.strip()]
-    
+
     prices = []
     for symbol in symbol_list:
         url = f"https://data.alpaca.markets/v2/stocks/{symbol}/quotes/latest"
@@ -302,10 +306,89 @@ def get_latest_prices(
         data = response.json()
         price = round(data.get("quote", {}).get("ap", 0), 2)
         print(f"{symbol} price: {price}")
-        prices.append({
-            "symbol": symbol,
-            "price": float(f"{price:.2f}"),
-            "change_percent": 0  # Placeholder
-        })
+        prices.append(
+            {
+                "symbol": symbol,
+                "price": float(f"{price:.2f}"),
+                "change_percent": 0,  # Placeholder
+            }
+        )
 
     return prices
+
+
+@router.post("/user/save_portfolio_value")
+def save_portfolio_value(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    """
+    Fetch the current portfolio value and save it to the database.
+    """
+    headers = get_alpaca_headers(current_user)
+
+    # Fetch account details (Portfolio value)
+    account_response = requests.get(f"{ALPACA_BASE_URL}/v2/account", headers=headers)
+    if account_response.status_code != 200:
+        raise HTTPException(status_code=400, detail="Failed to fetch account data")
+
+    account_data = account_response.json()
+    portfolio_value = account_data.get("portfolio_value")
+
+    # Save the portfolio value in the database
+    portfolio_history = PortfolioHistory(
+        user_id=current_user.id,
+        portfolio_value=portfolio_value,
+    )
+    db.add(portfolio_history)
+    db.commit()
+
+    return {
+        "message": "Portfolio value saved successfully",
+        "portfolio_value": portfolio_value,
+    }
+
+
+@router.get("/user/portfolio_graph")
+def get_portfolio_graph(
+    db: Session = Depends(get_db), current_user: User = Depends(get_current_user)
+):
+    """
+    Fetch historical portfolio values to be used for plotting a graph.
+    Also calculates P/L and P/L percent for each data point.
+    """
+    # Fetch historical portfolio values from the database
+    portfolio_history_data = (
+        db.query(PortfolioHistory)
+        .filter(PortfolioHistory.user_id == current_user.id)
+        .order_by(PortfolioHistory.timestamp)  # Ensure data is sorted by timestamp
+        .all()
+    )
+
+    if not portfolio_history_data:
+        raise HTTPException(status_code=404, detail="No portfolio history found")
+
+    # Prepare the data for the graph (timestamp and portfolio value)
+    graph_data = []
+    prev_value = None
+
+    for i, entry in enumerate(portfolio_history_data):
+        data_point = {
+            "timestamp": entry.timestamp.isoformat(),
+            "portfolio_value": entry.portfolio_value,
+            "pl": 0,  # Default to 0 for the first data point
+            "pl_percent": 0,  # Default to 0 for the first data point
+        }
+
+        # If there is a previous value, calculate P/L and P/L percent
+        if prev_value is not None:
+            pl = entry.portfolio_value - prev_value
+            pl_percent = (pl / prev_value) * 100 if prev_value != 0 else 0
+            data_point["pl"] = round(pl, 2)  # P/L in currency
+            data_point["pl_percent"] = round(pl_percent, 2)  # P/L percent
+
+        graph_data.append(data_point)
+
+        # Set the current value as previous value for next iteration
+        prev_value = entry.portfolio_value
+
+    return {"data": graph_data}
