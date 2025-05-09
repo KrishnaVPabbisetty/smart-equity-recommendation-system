@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 export default function AIAssistant() {
   const [messages, setMessages] = useState([
     {
-      role: "system",
+      role: "assistant",
       content:
         "Hello! I'm your AI investment assistant. I can help you with:\n" +
         "• Stock analysis and recommendations\n" +
@@ -34,6 +34,8 @@ export default function AIAssistant() {
     setInput("");
     setLoading(true);
 
+   
+
     try {
       const res = await fetch(`${baseURL}/api/agent-chat/message`, {
         method: "POST",
@@ -43,7 +45,7 @@ export default function AIAssistant() {
                  },
         body: JSON.stringify({
           history: newHistory,
-          message:question,
+          question:question,
         }),
       });
       if (!res.ok) {
