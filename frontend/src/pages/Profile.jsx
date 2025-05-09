@@ -4,6 +4,7 @@ const Profile = () => {
   const [income, setIncome] = useState("");
   const [goal, setGoal] = useState("");
   const [risk, setRisk] = useState("medium");
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("profile"));

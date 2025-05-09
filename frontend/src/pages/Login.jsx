@@ -5,6 +5,7 @@ const Login = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -14,7 +15,7 @@ const Login = () => {
     body.append("password", password);
   
     try {
-      const res = await fetch("http://127.0.0.1:8000/token", {
+      const res = await fetch(`${baseURL}/token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded", // ✅ correct type for OAuth2
@@ -26,6 +27,7 @@ const Login = () => {
   
       if (res.ok) {
         localStorage.setItem("token", data.access_token);
+        localStorage.setItem("is_admin",data.is_admin)
         navigate("/dashboard");
       } else {
         alert("Login failed: " + (data.detail || "Unknown error"));

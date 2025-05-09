@@ -3,12 +3,13 @@ import { useState, useEffect } from "react";
 export default function AdminPanel() {
   const [documents, setDocuments] = useState([]);
   const [file, setFile] = useState(null);
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   const fetchDocuments = async () => {
     const token = localStorage.getItem("token");
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/admin/documents", {
+      const res = await fetch(`${baseURL}/admin/documents`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -32,7 +33,7 @@ export default function AdminPanel() {
     formData.append("file", selectedFile);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/admin/upload", {
+      const res = await fetch(`${baseURL}/admin/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -80,8 +81,8 @@ export default function AdminPanel() {
             {documents.length > 0 ? (
               documents.map((doc) => (
                 <tr key={doc.id} className="border-b">
-                  <td className="p-2">{doc.name}</td>
-                  <td className="p-2">{doc.upload_date}</td>
+                  <td className="p-2">{doc.filename}</td>
+                  <td className="p-2">{new Date(doc.created_at).toLocaleString()}</td>
                 </tr>
               ))
             ) : (

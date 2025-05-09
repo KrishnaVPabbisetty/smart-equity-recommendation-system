@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useMarketData } from "../contexts/MarketDataContext";
 import OrderReviewModal from "./OrderReviewModal";
 
 export default function BuySellPanel() {
@@ -14,13 +15,15 @@ export default function BuySellPanel() {
   const [showModal, setShowModal] = useState(false);
   const [marketPrice, setMarketPrice] = useState(0);
   const [marketClosed, setMarketClosed] = useState(false);
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
 
-  // Fetch buying power
+  const { getLatestPrice, subscribeToSymbol } = useMarketData();
+
   useEffect(() => {
     const fetchBuyingPower = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch("http://127.0.0.1:8000/user/portfolio", {
+        const res = await fetch(`${baseURL}/user/portfolio`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -34,55 +37,17 @@ export default function BuySellPanel() {
     fetchBuyingPower();
   }, []);
 
-  // WebSocket for live market price
   useEffect(() => {
-    if (!symbol) return;
-  
-    const token = localStorage.getItem("token");
-    const ws = new WebSocket("ws://127.0.0.1:8000/ws/market");
-    let timeout;
-  
-    ws.onopen = () => {
-      // Send token and symbol after opening
-      ws.send(JSON.stringify({
-        token: token,
-        symbol: symbol.toUpperCase()
-      }));
+    const fetchPrice = async () => {
+      if (!symbol) return;
+      subscribeToSymbol(symbol);
+      const { price, stale } = await getLatestPrice(symbol);
+      setMarketPrice(price);
+      setMarketClosed(stale);
     };
-  
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-  
-        if (data.symbol === symbol.toUpperCase() && data.price) {
-          setMarketPrice(parseFloat(data.price));
-          setMarketClosed(false);
-  
-          // Reset timeout on every message
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            setMarketClosed(true);
-          }, 30000); // 30 seconds of inactivity = market closed
-        }
-      } catch (err) {
-        console.error("Failed to parse WebSocket message:", err);
-      }
-    };
-  
-    ws.onerror = (err) => {
-      console.error("WebSocket error:", err);
-    };
-  
-    ws.onclose = () => {
-      clearTimeout(timeout);
-    };
-  
-    return () => {
-      ws.close();
-      clearTimeout(timeout);
-    };
+    fetchPrice();
   }, [symbol]);
-  
+
   const estimatedCost =
     buyMode === "dollars"
       ? parseFloat(qty)
@@ -108,7 +73,7 @@ export default function BuySellPanel() {
     };
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/user${endpoint}`, {
+      const res = await fetch(`${baseURL}/user${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,9 +132,7 @@ export default function BuySellPanel() {
           <label className="block font-medium">Market Price</label>
           <div className="flex items-center gap-2">
             <span className="font-semibold">
-              ${marketPrice.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
+              ${parseFloat(marketPrice).toFixed(2)}
             </span>
             {marketClosed && (
               <span className="text-sm text-gray-500 italic">Market closed</span>
@@ -289,8 +252,17 @@ export default function BuySellPanel() {
 
         <div className="text-sm font-medium">
           <div>Estimated Quantity: {estimatedQty}</div>
-          <div>Estimated Cost: ${parseFloat(estimatedCost).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</div>
-          <div>Buying Power: ${parseFloat(buyingPower).toLocaleString()}</div>
+          <div>
+            Estimated Cost: ${parseFloat(estimatedCost).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 6,
+            })}
+          </div>
+          <div>
+            Buying Power: ${parseFloat(buyingPower).toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
+          </div>
         </div>
 
         <button

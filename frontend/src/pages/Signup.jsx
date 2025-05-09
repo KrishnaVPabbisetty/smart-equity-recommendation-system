@@ -13,6 +13,7 @@ const Signup = () => {
   const [riskTolerance, setRiskTolerance] = useState("medium");
   const [investmentStyle, setInvestmentStyle] = useState("growth");
   const [isAdmin, setIsAdmin] = useState(false);
+  const baseURL=import.meta.env.VITE_API_BASE_URL;
   const isFormValid =
     email &&
     username &&
@@ -41,7 +42,7 @@ const Signup = () => {
       };
     
       try {
-        const res = await fetch("http://127.0.0.1:8000/signup", {
+        const res = await fetch(`${baseURL}/signup`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
