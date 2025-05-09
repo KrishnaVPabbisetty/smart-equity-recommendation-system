@@ -35,7 +35,7 @@ def get_user_indicators(user_id: int) -> int:
 @tool
 def fetch_stock_price(symbol: str) -> str:
     """Get the current stock price of a symbol."""
-    return f"[Simulated] Price for {symbol}: $123.45"
+    return f"[Simulated] Price for {symbol}: $198.53"
 
 @tool
 def execute_trade_action(
@@ -87,9 +87,46 @@ def execute_trade_action(
         import traceback
         return f"Trade failed for {symbol}: {str(e)}"
 
+
+@tool
+def get_recommendation(symbol: str, user_id: int, qty: float = 1) -> str:
+    """
+    recommend whether to buy or sell the stock based on valid stock symbol and user.
+    Required: symbol, user_id,
+    Optional: qty (default = 1).
+    """
+    return """
+        Recommendation:
+            BUY – AAPL stock is showing strong buy signals based on the latest analysis.
+
+            Reasoning:
+
+            Document Data: Relevant data has been processed and reviewed.
+
+            Recent News: AAPL has been experiencing significant growth in options activity, and its services have hit an all-time high.
+
+            News Index: 0.7, indicating positive market sentiment.
+
+            Technical Indicators:
+
+            SMA (Simple Moving Average): 211.04
+
+            RSI (Relative Strength Index): 36.63 (indicating potential for upward momentum)
+
+            MACD (Moving Average Convergence Divergence): -2.72 (suggesting market could shift soon)
+
+            Current User Holding:
+
+            7 units of AAPL stock, currently worth $1388.94.
+
+            Conclusion:
+            Given the strong buy signals and your existing holdings, adding more units would reinforce your position and strengthen your overall portfolio.
+    """
+
 TOOLS = [
     retrieve_similar_docs,
     get_user_indicators,
     fetch_stock_price,
     execute_trade_action,
+    get_recommendation
 ]
