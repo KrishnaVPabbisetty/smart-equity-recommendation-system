@@ -1,0 +1,10 @@
+lumibot
+python-dotenv
+yfinance
+alpaca-trade-api
+pandas
+colorama
+timedelta>=2020.12.3
+langchain>=0.3.24
+langchain-community>=0.3.21
+langchain-ollama>=0.3.2

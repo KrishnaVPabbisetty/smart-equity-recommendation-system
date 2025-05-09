@@ -28,7 +28,7 @@ def retrieve_similar_docs(query: str) -> str:
         return f"An error occurred while retrieving documents for the query: '{query}'."
 
 @tool
-def get_user_indicators(user_id: str) -> str:
+def get_user_indicators(user_id: int) -> int:
     """Fetch RSI, SMA, MACD indicators for the user's portfolio."""
     return "[Simulated] Technical indicators for user: " + user_id
 
@@ -39,7 +39,7 @@ def fetch_stock_price(symbol: str) -> str:
 
 @tool
 def execute_trade_action(
-    user_id: str,
+    user_id: int,
     action: str,
     symbol: str,
     qty: float = 1,

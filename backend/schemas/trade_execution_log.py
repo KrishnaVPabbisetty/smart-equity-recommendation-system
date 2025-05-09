@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class TradeExecutionLogCreate(BaseModel):
-    user_id: str
+    user_id: int
     symbol: str
     action: str  # BUY or SELL
     quantity: float
@@ -13,7 +13,7 @@ class TradeExecutionLogCreate(BaseModel):
 
 class TradeExecutionLogOut(BaseModel):
     id: str
-    user_id: str
+    user_id: int
     symbol: str
     action: str
     quantity: float
