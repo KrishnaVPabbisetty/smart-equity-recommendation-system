@@ -98,7 +98,7 @@ function Dashboard() {
         <MarketNewsPanel />
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <section className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
   {/* Portfolio Table Section */}
   <div className="md:col-span-2 space-y-6">
     {/* Positions Table */}
