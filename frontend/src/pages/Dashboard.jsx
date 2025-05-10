@@ -12,7 +12,6 @@ function Dashboard() {
   const [previousValue, setPreviousValue] = useState(0);
   const [buyingPower, setBuyingPower] = useState(0);
   const [cash, setCash] = useState(0);
-  const [equity, setEquity] = useState(0);
   const baseURL=import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
@@ -32,7 +31,6 @@ function Dashboard() {
         setPortfolioValue(parseFloat(data.portfolio_value || 0));
         setBuyingPower(parseFloat(data.buying_power || 0));
         setCash(parseFloat(data.cash || 0));
-        setEquity(parseFloat(data.equity || 0));
       } catch (err) {
         console.error("Failed to fetch portfolio", err);
       }
