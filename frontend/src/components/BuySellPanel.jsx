@@ -269,7 +269,7 @@ export default function BuySellPanel() {
           className={`w-full py-2 rounded font-semibold ${
             isReviewDisabled
               ? "bg-blue-200 text-gray-400 cursor-not-allowed"
-              : "bg-blue-400 hover:bg-yellow-500 text-black"
+              : "bg-blue-400 hover:bg-blue-500 text-black"
           }`}
           disabled={isReviewDisabled}
           onClick={() => setShowModal(true)}
