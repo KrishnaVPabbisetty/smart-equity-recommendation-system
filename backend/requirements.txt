@@ -16,3 +16,4 @@ python-dotenv
 pinecone
 psycopg2
 websockets
+numpy
