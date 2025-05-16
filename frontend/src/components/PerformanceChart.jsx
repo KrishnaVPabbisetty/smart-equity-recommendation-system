@@ -147,7 +147,7 @@ const PerformanceChart = () => {
         borderColor: 'rgb(96, 165, 250)', // Line color (blue)
         backgroundColor: 'rgba(96, 165, 250, 0.2)', // Fill color below the line (light blue)
         tension: 0.3, // Smoothness of the curve
-        pointRadius: 3, // Radius of points on the line
+        pointRadius: 0, // Radius of points on the line
         pointBackgroundColor: 'rgb(96, 165, 250)', // Color of points
         borderWidth: 2, // Thickness of the line
       },
@@ -179,14 +179,20 @@ const PerformanceChart = () => {
           display: true,
           text: 'Time',
         },
+        grid: {
+          display: false, // Remove grid lines on x-axis
+        },
       },
       y: {
         title: {
           display: true,
           text: 'Portfolio Value',
         },
+        grid: {
+          display: false, // Remove grid lines on x-axis
+        },
         ticks: {
-          beginAtZero: false, // You can customize this behavior
+          beginAtZero: false, // Don't start the y-axis at 0 // Set a max value to fit your data better
         },
       },
     },
