@@ -1,13 +1,18 @@
 # services/agents/tools.py
 from langchain_core.tools import tool
 from utils.pinecone_retreival import retrieve_context
+from utils.market_data import fetch_historical_bars
+from utils.alpaca import get_alpaca_headers
+from utils.indicators import  calculate_sma, calculate_rsi, calculate_macd
+from utils.sentiment import analyze_sentiment_from_documents_or_news
 # LangChain-compatible tool functions using decorators
 from routes.trading_routes import buy_stock, sell_stock
 from routes.trading_routes import BuyStockRequest, SellStockRequest
-from db import get_db
+from db import get_db, SessionLocal
 from routes.user_routes import get_current_user
 from models.user import User
 from db import SessionLocal
+from datetime import datetime, timedelta
 
 def get_db_session():
     return SessionLocal()
@@ -87,46 +92,115 @@ def execute_trade_action(
         import traceback
         return f"Trade failed for {symbol}: {str(e)}"
 
+@tool
+def test_fetch_bars(user_id: int, symbol: str, start_date: str, end_date: str, timeframe: str = "1Day") -> str:
+    """
+    Fetch historical bars from Alpaca for a given user and calculate SMA, RSI, and MACD.
+    """
+    try:
+        db = SessionLocal()
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return f"User {user_id} not found"
+
+        headers = get_alpaca_headers(user)
+        bars = fetch_historical_bars(symbol, start_date, end_date, timeframe, headers)
+        if not bars:
+            return f"No data returned for {symbol} between {start_date} and {end_date}."
+
+        close_prices = [bar["c"] for bar in bars]
+
+        sma = calculate_sma(close_prices)
+        rsi = calculate_rsi(close_prices)
+        macd = calculate_macd(close_prices)
+
+        sample = bars[:3]
+        resulting_bars = "\n".join(
+            f"{bar['t']} | O: {bar['o']} H: {bar['h']} L: {bar['l']} C: {bar['c']} V: {bar['v']}" for bar in sample
+        )
+
+        return (
+            f"Sample bars for {symbol}:\n{resulting_bars}\n\n"
+            f"Technical Indicators:\n"
+            f"SMA: {sma}\n"
+            f"RSI: {rsi}\n"
+            f"MACD: {macd}"
+        )
+    except Exception as e:
+        return f"Error: {str(e)}"
+
 
 @tool
-def get_recommendation(symbol: str, user_id: int, qty: float = 1) -> str:
+def generate_stock_recommendation(user_id: int, symbol: str) -> str:
     """
-    recommend whether to buy or sell the stock based on valid stock symbol and user.
-    Required: symbol, user_id,
-    Optional: qty (default = 1).
+    Generate a stock recommendation based on sentiment and technical indicators and the symbol sent by the user.
     """
-    return """
-        Recommendation:
-            BUY – AAPL stock is showing strong buy signals based on the latest analysis.
+    try:
 
-            Reasoning:
+        print("Calling stock recommendation for symbol "+ symbol )
+        db = SessionLocal()
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return f"User {user_id} not found."
 
-            Document Data: Relevant data has been processed and reviewed.
+        print("User found ")
+        headers = get_alpaca_headers(user)
 
-            Recent News: AAPL has been experiencing significant growth in options activity, and its services have hit an all-time high.
+        # Fetch historical bars
+        end_date = datetime.utcnow().date() - timedelta(days=1)
+        start_date = end_date - timedelta(days=30)
 
-            News Index: 0.7, indicating positive market sentiment.
+        print(str(start_date.isoformat()) + str(end_date.isoformat()))
+        bars = fetch_historical_bars(symbol, start_date, end_date, "1Day", headers)
 
-            Technical Indicators:
+        if not bars:
+            return f"No bars returned for {symbol} between {start_date} and {end_date}."
 
-            SMA (Simple Moving Average): 211.04
+        if not bars or len(bars) < 20:
+            return f"Not enough market data available for {symbol}."
 
-            RSI (Relative Strength Index): 36.63 (indicating potential for upward momentum)
+        closes = [bar["c"] for bar in bars]
+        sma = calculate_sma(closes)
+        rsi = calculate_rsi(closes)
+        macd = calculate_macd(closes)
+        
+        print(f"indicators: rsi: {rsi}, sma: {sma}, macd:{macd}")
 
-            MACD (Moving Average Convergence Divergence): -2.72 (suggesting market could shift soon)
+        # Analyze sentiment
+        sentiment_result = analyze_sentiment_from_documents_or_news(symbol)
+        sentiment = sentiment_result.get("sentiment", "positive")
+        score = sentiment_result.get("score", 0.5)
 
-            Current User Holding:
+        # Decide recommendation
+        if rsi < 70 and macd > -1 and sentiment == "positive":
+            action = "BUY"
+        elif rsi > 70 and macd < 0 and sentiment == "negative":
+            action = "SELL"
 
-            7 units of AAPL stock, currently worth $1388.94.
 
-            Conclusion:
-            Given the strong buy signals and your existing holdings, adding more units would reinforce your position and strengthen your overall portfolio.
-    """
+        recommendation_result =(
+            f"Recommendation:\n{action} – {symbol.upper()} stock shows {action.lower()} signals based on the latest analysis.\n\n"
+            f"Reasoning:\n\n"
+            f"Sentiment Analysis: {sentiment.upper()} (score: {score})\n\n"
+            f"Technical Indicators:\n"
+            f"- SMA: {sma}\n"
+            f"- RSI: {rsi}\n"
+            f"- MACD: {macd}\n\n"
+            f"Conclusion:\nBased on the indicators and sentiment, the suggested action is: {action}."
+        )
 
+        print(recommendation_result)
+        # Format response
+        return recommendation_result
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+    
 TOOLS = [
     retrieve_similar_docs,
     get_user_indicators,
     fetch_stock_price,
     execute_trade_action,
-    get_recommendation
+    generate_stock_recommendation,
+    test_fetch_bars
 ]
