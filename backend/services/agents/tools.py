@@ -4,7 +4,7 @@ from utils.pinecone_retreival import retrieve_context
 from utils.market_data import fetch_historical_bars
 from utils.alpaca import get_alpaca_headers
 from utils.indicators import  calculate_sma, calculate_rsi, calculate_macd
-from utils.sentiment import analyze_sentiment_from_documents_or_news
+from utils.sentiment import analyze_sentiment_from_documents_or_news, get_accurate_sentiment
 # LangChain-compatible tool functions using decorators
 from routes.trading_routes import buy_stock, sell_stock
 from routes.trading_routes import BuyStockRequest, SellStockRequest
@@ -170,11 +170,12 @@ def generate_stock_recommendation(user_id: int, symbol: str) -> str:
         sentiment_result = analyze_sentiment_from_documents_or_news(symbol)
         sentiment = sentiment_result.get("sentiment", "positive")
         score = sentiment_result.get("score", 0.5)
+        print(sentiment_result)
+        # # Decide recommendation
 
-        # Decide recommendation
-        if rsi < 70 and macd > -1 and sentiment == "positive":
+        if rsi < 70 and macd > -1 and sentiment=="positive":
             action = "BUY"
-        elif rsi > 70 and macd < 0 and sentiment == "negative":
+        elif rsi > 70 and macd < 1 and sentiment=="negative":
             action = "SELL"
 
 

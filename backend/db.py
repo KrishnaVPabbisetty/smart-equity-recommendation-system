@@ -4,10 +4,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
 
-# SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
-SQLALCHEMY_DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql://postgres@localhost:5432/smart_equity_dev"
-)
+SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# SQLALCHEMY_DATABASE_URL = os.getenv(
+#     "DATABASE_URL", "postgresql://postgres@localhost:5432/smart_equity_dev"
+# )
 
 from sqlalchemy.engine.url import make_url
 

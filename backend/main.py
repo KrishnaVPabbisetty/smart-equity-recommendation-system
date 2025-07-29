@@ -19,7 +19,7 @@ init()  # initiates db
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # You can also use ["*"] temporarily
+    allow_origins=["*"],  # You can also use ["*"] temporarily
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
